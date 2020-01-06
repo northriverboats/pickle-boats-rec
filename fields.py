@@ -2,135 +2,26 @@
 
 # [0] title, [1] column, [2] row, [3] default
 topSection = [
-    ["OPTION NUMBER", 2, 1, ""],
-    ["OPTION NAME", 2, 2, ""],
-    ["OPTION NOTES", 2, 3, ""],
-    ["TOTAL COST", 2, 9, "0"],
-    ["CALCULATED RETAIL", 2, 10, "0"],
-    ["ADVERTISED RETAIL", 2, 11, "0"],
-    ["CONTRIBUTION MARGIN", 2, 12, "0"],
-    ["DESIGN LABOR RATE", 2, 15, "0"],
-    
-    ["18 LABOR TOTAL", 13, 2, "0"],
-    ["18 MATERIAL TOTAL", 13, 3, "0"],
-    ["18 OVERHEAD CALCULATION", 13, 4, "0"],
-    ["18 TOTAL COST", 13, 5, "0"],
+    ["BOAT MODEL", 1, 1, ""],
+    ["OVERHEAD BOAT", 3, 5, ""],
+    ["RETAIL BOAT", 2, 6, ""],
+    ["OVERHEAD MOTOR AND TRAILER", 3, 7, "0"],
+    ["RETAIL MOTOR AND TRAILER", 2, 8, "0"],
+]    
 
-    ["19 LABOR TOTAL", 17, 2, "0"],
-    ["19 MATERIAL TOTAL", 17, 3, "0"],
-    ["19 OVERHEAD CALCULATION", 17, 4, "0"],
-    ["19 TOTAL COST", 17, 5, "0"],
-
-    ["20 LABOR TOTAL", 21, 2, "0"],
-    ["20 MATERIAL TOTAL", 21, 3, "0"],
-    ["20 OVERHEAD CALCULATION", 21, 4, "0"],
-    ["20 TOTAL COST", 21, 5, "0"],
-    
-    ["21 LABOR TOTAL", 25, 2, "0"],
-    ["21 MATERIAL TOTAL", 25, 3, "0"],
-    ["21 OVERHEAD CALCULATION", 25, 4, "0"],
-    ["21 TOTAL COST", 25, 5, "0"],
-    
-    ["22 LABOR TOTAL", 29, 2, "0"],
-    ["22 MATERIAL TOTAL", 29, 3, "0"],
-    ["22 OVERHEAD CALCULATION", 29, 4, "0"],
-    ["22 TOTAL COST", 29, 5, "0"],
-    
-    ["23 LABOR TOTAL", 33, 2, "0"],
-    ["23 MATERIAL TOTAL", 33, 3, "0"],
-    ["23 OVERHEAD CALCULATION", 33, 4, "0"],
-    ["23 TOTAL COST", 33, 5, "0"],
-    
-    ["24 LABOR TOTAL", 37, 2, "0"],
-    ["24 MATERIAL TOTAL", 37, 3, "0"],
-    ["24 OVERHEAD CALCULATION", 37, 4, "0"],
-    ["24 TOTAL COST", 37, 5, "0"],
-    
-    ["25 LABOR TOTAL", 41, 2, "0"],
-    ["25 MATERIAL TOTAL", 41, 3, "0"],
-    ["25 OVERHEAD CALCULATION", 41, 4, "0"],
-    ["25 TOTAL COST", 41, 5, "0"],
-    
-    ["26 LABOR TOTAL", 45, 2, "0"],
-    ["26 MATERIAL TOTAL", 45, 3, "0"],
-    ["26 OVERHEAD CALCULATION", 45, 4, "0"],
-    ["26 TOTAL COST", 45, 5, "0"],
-    
-    ["27 LABOR TOTAL", 49, 2, "0"],
-    ["27 MATERIAL TOTAL", 49, 3, "0"],
-    ["27 OVERHEAD CALCULATION", 49, 4, "0"],
-    ["27 TOTAL COST", 49, 5, "0"],
-    
-    ["28 LABOR TOTAL", 53, 2, "0"],
-    ["28 MATERIAL TOTAL", 53, 3, "0"],
-    ["28 OVERHEAD CALCULATION", 53, 4, "0"],
-    ["28 TOTAL COST", 53, 5, "0"],
-    
-    ["29 LABOR TOTAL", 57, 2, "0"],
-    ["29 MATERIAL TOTAL", 57, 3, "0"],
-    ["29 OVERHEAD CALCULATION", 21, 4, "0"],
-    ["29 TOTAL COST", 57, 5, "0"],
-    
-    ["30 LABOR TOTAL", 61, 2, "0"],
-    ["30 MATERIAL TOTAL", 61, 3, "0"],
-    ["30 OVERHEAD CALCULATION", 61, 4, "0"],
-    ["30 TOTAL COST", 61, 5, "0"],
-    
-    ["31 LABOR TOTAL", 65, 2, "0"],
-    ["31 MATERIAL TOTAL", 65, 3, "0"],
-    ["31 OVERHEAD CALCULATION", 65, 4, "0"],
-    ["31 TOTAL COST", 65, 5, "0"],
-    
-    ["32 LABOR TOTAL", 69, 2, "0"],
-    ["32 MATERIAL TOTAL", 69, 3, "0"],
-    ["32 OVERHEAD CALCULATION", 69, 4, "0"],
-    ["32 TOTAL COST", 69, 5, "0"],
-    
-    ["33 LABOR TOTAL", 73, 2, "0"],
-    ["33 MATERIAL TOTAL", 73, 3, "0"],
-    ["33 OVERHEAD CALCULATION", 73, 4, "0"],
-    ["33 TOTAL COST", 73, 5, "0"],
-    
-    ["34 LABOR TOTAL", 77, 2, "0"],
-    ["34 MATERIAL TOTAL", 77, 3, "0"],
-    ["34 OVERHEAD CALCULATION", 77, 4, "0"],
-    ["34 TOTAL COST", 77, 5, "0"],
-    
-    ["35 LABOR TOTAL", 81, 2, "0"],
-    ["35 MATERIAL TOTAL", 81, 3, "0"],
-    ["35 OVERHEAD CALCULATION", 81, 4, "0"],
-    ["35 TOTAL COST", 81, 5, "0"],
-    
-    ["36 LABOR TOTAL", 85, 2, "0"],
-    ["36 MATERIAL TOTAL", 85, 3, "0"],
-    ["36 OVERHEAD CALCULATION", 85, 4, "0"],
-    ["36 TOTAL COST", 85, 5, "0"],
-    
-    ["37 LABOR TOTAL", 89, 2, "0"],
-    ["37 MATERIAL TOTAL", 89, 3, "0"],
-    ["37 OVERHEAD CALCULATION", 89, 4, "0"],
-    ["37 TOTAL COST", 89, 5, "0"],
-    
-    ["18 DESIGN HOURS", 12, 15, "0"],
-    ["19 DESIGN HOURS", 16, 15, "0"],
-    ["20 DESIGN HOURS", 20, 15, "0"],
-    ["21 DESIGN HOURS", 24, 15, "0"],
-    ["22 DESIGN HOURS", 28, 15, "0"],
-    ["23 DESIGN HOURS", 32, 15, "0"],
-    ["24 DESIGN HOURS", 36, 15, "0"],
-    ["25 DESIGN HOURS", 40, 15, "0"],
-    ["26 DESIGN HOURS", 44, 15, "0"],
-    ["27 DESIGN HOURS", 48, 15, "0"],
-    ["28 DESIGN HOURS", 52, 15, "0"],
-    ["29 DESIGN HOURS", 56, 15, "0"],
-    ["30 DESIGN HOURS", 60, 15, "0"],
-    ["31 DESIGN HOURS", 64, 15, "0"],
-    ["32 DESIGN HOURS", 68, 15, "0"],
-    ["33 DESIGN HOURS", 72, 15, "0"],
-    ["34 DESIGN HOURS", 76, 15, "0"],
-    ["35 DESIGN HOURS", 80, 15, "0"],
-    ["36 DESIGN HOURS", 84, 15, "0"],
-    ["37 DESIGN HOURS", 88, 15, "0"],
+# [0] title, [1] column, [2] row, [3] default
+costSummary = [
+    [" LABOR TOTAL", 11, 2, "0"],
+    [" MATERIAL TOTAL", 11, 3, "0"],
+    [" OVERHEAD CALCULATION", 11, 4, "0"],
+    [" CALCULATED RETAIL BOAT", 11, 5, "0"],
+	[" CALCULATED RETAIL BOAT TRAILER", 11, 6, "0"],
+	[" CALCULATED RETAIL TOTAL", 11, 7, "0"],
+	[" CALCULATED DEALER INVOICE", 11, 8, "0"],
+	[" CALCULATED DEALER CM", 11, 9, "0"],
+	[" ADVERTISED RETAIL", 11, 10, "0"],
+	[" ADVERTISED DEALER INVOICE", 11, 11, "0"],
+	[" ADVERTISED CM", 11, 12, "0"],
 ]
 
 # [0] title, [1] column, [2] row, [3] default

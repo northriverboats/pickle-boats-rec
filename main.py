@@ -6,7 +6,7 @@ from PyQt4.QtCore import QSettings, QSize, QPoint
 from PyQt4.QtCore import QThread, SIGNAL
 from pathlib import Path
 from dotenv import load_dotenv
-from fields import topSection, startSections, endSections, partSection,  bottomSection
+from fields import topSection, startSections, endSections, partSection,  bottomSection, costSummary
 import openpyxl
 import pickle
 import sys # We need sys so that we can pass argv to QApplication
@@ -53,7 +53,7 @@ class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         # work in INI File Stuff here
         QtCore.QCoreApplication.setOrganizationName("NRB")
         QtCore.QCoreApplication.setOrganizationDomain("northriverboats.com")
-        QtCore.QCoreApplication.setApplicationName("Options Fodler Pickler")
+        QtCore.QCoreApplication.setApplicationName("Options Boat Pickler")
         self.settings = QSettings()
         
 
@@ -75,7 +75,7 @@ class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.btnRun.clicked.connect(self.startBackgroundTask)
 
     def doAbout(self, event):
-        about_msg = "NRB Options Folder Pickler\n©2019 North River Boats\nBy Fred Warren"
+        about_msg = "NRB Boat Folder Pickler\n©2019 North River Boats\nBy Fred Warren"
         reply = QtGui.QMessageBox.information(self, 'About',
                          about_msg, QtGui.QMessageBox.Ok)
 
@@ -169,32 +169,49 @@ class background_thread(QThread):
     def process_sheet(self, file):
         wb = openpyxl.load_workbook(file, data_only = True)
         ws = wb.active
-        option = file.name[:-5]
+        boat = file.name[:-5]
         data = {}
         data["FILE"] = file.name
         data["FULLPATH"] = file.resolve()
-        sections = ["FABRICATION", "CANVAS", "PAINT", "OUTFITTING"]
+		# order of sections corresponds with order of starts and ends
+        sections = ["TRAILER", "ENGINE & JET", "FABRICATION", "CANVAS", "PAINT", "OUTFITTING"]
         
         # find where sections start
         starts = []
-        for row in ws.iter_cols(min_col=1, max_col=1):
+        for row in ws.iter_cols(min_col=8, max_col=8):
             for cell in row:
-                if cell.value == "QTY":
+                if cell.value == "QTY.":
                     starts.append(cell.row)
 
         # find where sections end
         ends = []
-        for row in ws.iter_cols(min_col=5, max_col=5):
+        for row in ws.iter_cols(min_col=10, max_col=10):
             for cell in row:
                 if cell.value == "SUBTOTAL":
                     ends.append(cell.row)
-        
+
+        boatSizes = []
+        for col in ws.iter_rows(min_row=1, max_row=1):
+            for cell in col:
+                if  str(cell.value).isdigit():
+                    boatSizes.append(cell.value)
+
+        # Process top static section of sheet
         for name, column, row, default in topSection:
             value = ws.cell(column = column, row = row).value
             if value is None:
                 value = default
             data[name] = value
 
+		#Process cost summary
+        for i, boatSize in enumerate(boatSizes):
+            for name, column, row, default in costSummary:
+                value = ws.cell(column = column + (i * 4), row = row).value
+                if value is None:
+                    value = default
+                data[str(boatSize) + name] = value
+                print(str(boatSize) + name, value)
+				
         # Process top non-parts portion of sections
         for i, section in enumerate(sections):
             offset = starts[i]
@@ -242,7 +259,7 @@ class background_thread(QThread):
             value = ws.cell(column = 1, row = offset + 21).value
         data["OUTFITTING NOTES"] = value
         
-        return [str(data["OPTION NUMBER"]), data]
+        return [str(data["BOAT MODEL"]), data]
 
     def run(self):
         self.running = True

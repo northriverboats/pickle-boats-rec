@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(601, 193)
+        MainWindow.resize(601, 197)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addLayout(self.horizontalLayout_4, 2, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 601, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 601, 26))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
@@ -107,7 +107,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "Options Folder Pickler", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Boat Folder Pickler", None))
         self.btnCancel.setText(_translate("MainWindow", "&Cancel", None))
         self.btnRun.setText(_translate("MainWindow", "&Run", None))
         self.btnBrowse.setText(_translate("MainWindow", "&Browse", None))
