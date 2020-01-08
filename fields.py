@@ -13,41 +13,27 @@ topSection = [
 costSummary = [
     [" LABOR TOTAL", 11, 2, "0"],
     [" MATERIAL TOTAL", 11, 3, "0"],
-    [" OVERHEAD CALCULATION", 11, 4, "0"],
-    [" CALCULATED RETAIL BOAT", 11, 5, "0"],
-	[" CALCULATED RETAIL BOAT TRAILER", 11, 6, "0"],
-	[" CALCULATED RETAIL TOTAL", 11, 7, "0"],
-	[" CALCULATED DEALER INVOICE", 11, 8, "0"],
-	[" CALCULATED DEALER CM", 11, 9, "0"],
-	[" ADVERTISED RETAIL", 11, 10, "0"],
-	[" ADVERTISED DEALER INVOICE", 11, 11, "0"],
-	[" ADVERTISED CM", 11, 12, "0"],
+    [" TRAILER / ENGINE & JET", 11, 4, "0"],
+    [" TOTAL COST", 11, 5, "0"],
+	[" RETAIL BASE BOAT", 11, 6, "0"],
+	[" RETAIL MOTOR / TRAILER", 11, 7, "0"],
+	[" CALCULATED RETAIL TOTAL", 11, 8, "0"],
+	[" CALCULATED DEALER INVOICE", 11, 9, "0"],
+	[" CALCULATED CM", 11, 10, "0"],
+	[" ADVERTISED RETAIL TOTAL", 11, 12, "0"],
+	[" ADVERTISED DEALER INVOICE", 11, 13, "0"],
+	[" ADVERTISED CM", 11, 14, "0"],
 ]
 
 # [0] title, [1] column, [2] row, [3] default
 startSections = [
-    [" CONSUMABLES", 2, -1, "0"],
-    [" LABOR RATE", 4, -1, "0"],
-    [" 18 HOURS", 12, -1, "0"],
-    [" 19 HOURS", 16, -1, "0"],
-    [" 20 HOURS", 20, -1, "0"],
-    [" 21 HOURS", 24, -1, "0"],
-    [" 22 HOURS", 28, -1, "0"],
-    [" 23 HOURS", 32, -1, "0"],
-    [" 24 HOURS", 36, -1, "0"],
-    [" 25 HOURS", 40, -1, "0"],
-    [" 26 HOURS", 44, -1, "0"],
-    [" 27 HOURS", 48, -1, "0"],
-    [" 28 HOURS", 52, -1, "0"],
-    [" 29 HOURS", 56, -1, "0"],
-    [" 30 HOURS", 60, -1, "0"],
-    [" 31 HOURS", 64, -1, "0"],
-    [" 32 HOURS", 68, -1, "0"],
-    [" 33 HOURS", 72, -1, "0"],
-    [" 34 HOURS", 76, -1, "0"],
-    [" 35 HOURS", 80, -1, "0"],
-    [" 36 HOURS", 84, -1, "0"],
-    [" 37 HOURS", 85, -1, "0"],
+    [" CONSUMABLES", 1, -1, "0"],
+    [" LABOR RATE", 3, -1, "0"],
+]
+
+# [0] title, [1] column, [2] row, [3] default
+startSectionsSize = [
+    [" HOURS", 10, -1, "0"]
 ]
 
 # [0] title, [1] column, [2] row, [3] default

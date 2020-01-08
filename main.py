@@ -6,7 +6,7 @@ from PyQt4.QtCore import QSettings, QSize, QPoint
 from PyQt4.QtCore import QThread, SIGNAL
 from pathlib import Path
 from dotenv import load_dotenv
-from fields import topSection, startSections, endSections, partSection,  bottomSection, costSummary
+from fields import topSection, startSections, startSectionsSize, endSections, partSection,  bottomSection, costSummary
 import openpyxl
 import pickle
 import sys # We need sys so that we can pass argv to QApplication
@@ -210,7 +210,6 @@ class background_thread(QThread):
                 if value is None:
                     value = default
                 data[str(boatSize) + name] = value
-                print(str(boatSize) + name, value)
 				
         # Process top non-parts portion of sections
         for i, section in enumerate(sections):
@@ -221,6 +220,17 @@ class background_thread(QThread):
                     value = default
                 data[section + name] = value
 
+		# Process top non-parts portion of sections by boat size
+        for i, section in enumerate(sections):
+            offset = starts[i]
+		    #offset in section without size
+            for j, boatSize in enumerate(boatSizes):
+                for name, column, row, default in startSectionsSize:
+                    value = ws.cell(column = ((j * 4) + 10), row = row + offset).value
+                    if value is None:
+                        value = default
+                    data[section + " " + str(boatSize) + name] = value
+                    
         # Process bottom non-parts portion of sections
         for i, section in enumerate(sections):
             offset = ends[i]
