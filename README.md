@@ -42,21 +42,20 @@ after line 874
 
 `# Applies only to non Windows platforms.`
 
-
 [Loran425/pyinstaller](https://github.com/Loran425/pyinstaller/commit/14b6e65642e4b07a4358bab278019a48dedf7460)  
 
 ## Methodology for extracting values from Spreadsheet
 1. A sheet is vertically divided into top, bottom and sections
-	* top is absoultly positioned at row 1.
+	* top is absolutely positioned at row 1.
 	* section `start` is found by looking in column A/1 for all cells that have the value `QTY`.
 	* section `end` is found by looking in column J/10 for all cells that have the value `SUBTOTAL`.
 	* bottom is computed as `max(end)+ 5`
-2. A sheet horizontally divied into an absolute positionedand relative positioned `boatSizes`.
-	* the leftmost coulmn A/1 is absolutley positioned.
-	* `boatSizes` is the text of any cell that is an integer value as determind by `.isidigit()`.
+2. A sheet horizontally divided into an absolute positioned and relative positioned `boatSizes`.
+	* the leftmost column A/1 is absolutely positioned.
+	* `boatSizes` is the text of any cell that is an integer value as determined by `.isidigit()`.
 	* the column position of `boatSizes` is computed by J/11 with `11 + (4 * i)` with `i` being the current index into `enumerate(boatSizes)`.
-3. The file `fields.py` holds the different **bands** on the page. Each **band** has entries for indiviudal values that will be captured
-	* **name** of the dictionay entry we are saving for that value
+3. The file `fields.py` holds the different **bands** on the page. Each **band** has entries for individual values that will be captured
+	* **name** of the dictionary entry we are saving for that value
 	* **column** either absolute or relative of the value to be captured
 	* **row** either absolute or relative of the value to be captured
 	* **default** a default value such as "0", "0.0" or "" in case the cell is empty so nulls are not being stored.
@@ -65,7 +64,7 @@ after line 874
 	* `costSummary` has columns found calculated by 11 + 4 * index into `boatSizes` and absolute rows.
 	* `bottomSection` has absolute columns and rows that are offset from `max(end) + 5`
 5. Section **bands** are processed once for each item in the `section[]` list.
-	* `startSections` need more info.
-	* `startSectionsSize` need more info.
-	* `endSections` has columns found calculated by 11 + 4 * index into `boatSizes` and rows offest from `start[i]` and occur after the `partSection` in each **section** and **band**.
-	* `partSection` needs to be divied it has both absolute columns at the start **and** `boatSizes[]` calculated columns. ``
+	* `startSections` has absolute columns and rows offset from `start[i]` and occur before the `partSection` in each **section**.
+	* `startSectionsSize` has columns found calculated by 11 + 4 * index into `boatSizes` and rows offset from `start[i]` and occur before the `partSection` in each **section**.
+	* `endSections` has columns found calculated by 11 + 4 * index into `boatSizes` and rows offset from `end[i]` and occur after the `partSection` in each **section**.
+	* `partSection` needs to be divided it has both absolute columns at the start **and** `boatSizes[]` calculated columns.

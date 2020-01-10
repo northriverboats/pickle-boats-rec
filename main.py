@@ -6,7 +6,8 @@ from PyQt4.QtCore import QSettings, QSize, QPoint
 from PyQt4.QtCore import QThread, SIGNAL
 from pathlib import Path
 from dotenv import load_dotenv
-from fields import topSection, startSections, startSectionsSize, endSections, partSection,  bottomSection, costSummary
+from fields import sections, topSection, bottomSection
+from fields import startSections, startSectionsSize, endSections, partSection, partSectionByModel, costSummary
 import openpyxl
 import pickle
 import sys # We need sys so that we can pass argv to QApplication
@@ -19,13 +20,12 @@ import MainWindow  # This file holds our MainWindow and all design related thing
 Notes:
 patch of the PyInstaller/depend/bindepend.py https://github.com/Loran425/pyinstaller/commit/14b6e65642e4b07a4358bab278019a48dedf7460
 
-Lib\site-packages\PyQt4\pyuic4 MainWindow.ui  -o MainWindow.py
+To design UI: Lib\site-packages\PyQt4\Designer.exe
 
-# Developed in C:\\Program Files\\NRB Pickle Options
-Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Options Fodler Pickler" "NRB Pickle Options FWW.spec" main.py
+To rebuild UI: Lib\site-packages\PyQt4\pyuic4 MainWindow.ui  -o MainWindow.py
 
-# Developed in C:\\Development\\nrb-pickle-options
-Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Options Fodler Pickler" "NRB Pickle Options Dev.spec" main.py
+Developed in C:\\Development\\nrb-pickle-boats :
+Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Boat Folder Pickler" "NRB Pickle Boats FWW.spec" main.py
 
 ToDo's
 """
@@ -173,9 +173,7 @@ class background_thread(QThread):
         data = {}
         data["FILE"] = file.name
         data["FULLPATH"] = file.resolve()
-		# order of sections corresponds with order of starts and ends
-        sections = ["TRAILER", "ENGINE & JET", "FABRICATION", "CANVAS", "PAINT", "OUTFITTING"]
-        
+
         # find where sections start
         starts = []
         for row in ws.iter_cols(min_col=8, max_col=8):
@@ -210,7 +208,7 @@ class background_thread(QThread):
                 if value is None:
                     value = default
                 data[str(boatSize) + name] = value
-				
+
         # Process top non-parts portion of sections
         for i, section in enumerate(sections):
             offset = starts[i]
@@ -223,52 +221,44 @@ class background_thread(QThread):
 		# Process top non-parts portion of sections by boat size
         for i, section in enumerate(sections):
             offset = starts[i]
-		    #offset in section without size
             for j, boatSize in enumerate(boatSizes):
                 for name, column, row, default in startSectionsSize:
-                    value = ws.cell(column = ((j * 4) + 10), row = row + offset).value
+                    value = ws.cell(column = column + (j * 4), row = row + offset).value
                     if value is None:
                         value = default
                     data[section + " " + str(boatSize) + name] = value
-                    
+
         # Process bottom non-parts portion of sections
         for i, section in enumerate(sections):
             offset = ends[i]
-            for name, column, row, default in endSections:
-                value = ws.cell(column = column, row = row + offset).value
-                if value is None:
-                    value = default
-                data[section + name] = value
-       
+            for j, boatSize in enumerate(boatSizes):
+                for name, column, row, default in endSections:
+                    value = ws.cell(column = column + (j * 4), row = row + offset).value
+                    if value is None:
+                        value = default
+                    data[section + " " + str(boatSize) + name] = value
+
         # Process parts portion of sections
         for i, section in enumerate(sections):
             data[section + " PARTS"] = []
             for offset in range(starts[i], ends[i]-1):
-                if ws.cell(column = 2, row = 1 + offset).value is not None:
-                    # print(option, ws.cell(column = 1, row = 1 + offset).value, ws.cell(column = 2, row = 1 + offset).value, ws.cell(column = 3, row = 1 + offset).value)
-                    part = {}
+                part = {}
+                if ws.cell(column = 1, row = 1 + offset).value is not None:
                     for name, column, row, default in partSection:
                         value = ws.cell(column = column, row = row + offset).value
                         if value is None:
                             value = default
                         part[name] = value
+                 
+                    for j, boatSize in enumerate(boatSizes):
+                        for name, column, row, default in partSectionByModel:
+                            value = ws.cell(column = column + (j * 4), row = row + offset).value
+                            if value is None:
+                                value = default
+                            part[str(boatSize) + name] = value
+                                
                     data[section + " PARTS"].append(part)
-        
-        # Process bottom section
-        offset = ends[3] + 5
-        for name, column, row, default in bottomSection:
-            value = ws.cell(column = column, row = row + offset).value
-            if value is None:
-                value = default
-            data[name] = value
 
-        # Handle Outfitting Notes
-        if offset + 21 > ws.max_row:
-            value = ""
-        else:
-            value = ws.cell(column = 1, row = offset + 21).value
-        data["OUTFITTING NOTES"] = value
-        
         return [str(data["BOAT MODEL"]), data]
 
     def run(self):

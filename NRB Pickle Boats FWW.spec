@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Developer\\NRB Pickle Boats'],
+             pathex=['C:\\Developer\\nrb-pickle-boats'],
              binaries=[],
              datas=[('pickle.ico','.'),('.env','.')],
              hiddenimports=[],
