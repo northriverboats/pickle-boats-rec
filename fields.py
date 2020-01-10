@@ -17,7 +17,7 @@ Notes:
     * Section top/bottom directly addressed: ['Seahawk Outboard']['TRAILER LABOR RATE']
     * Section parts list is an array found in: ['Seahawk Outboard']['TRAILER PARTS']
     * Section parts are referenced by index: ['Seahawk Outboard']['TRAILER PARTS'][0]
-    * Parts details are addresed: ['Seahawk Outboard']['TRAILER PARTS'][0]['UOM']
+    * Parts details are addressed: ['Seahawk Outboard']['TRAILER PARTS'][0]['UOM']
 """
 
 # order of sections corresponds with order of starts and ends
