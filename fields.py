@@ -2,7 +2,7 @@
 
 """
 Notes:
-  * Page is divide into 3 typos of bands: top, bottom, and section(s)
+  * Page is divide into 3 types of bands: top, bottom, and section(s)
   * If a column is CALCULATED it is column + (index into boatSection * 4)
   * If a row is OFFSET it is offset + row
   * These are done with sections[], boatSizes[] start[], end[]
