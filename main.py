@@ -6,8 +6,8 @@ from PyQt4.QtCore import QSettings, QSize, QPoint
 from PyQt4.QtCore import QThread, SIGNAL
 from pathlib import Path
 from dotenv import load_dotenv
-from fields import sections, topSection, bottomSection
-from fields import startSections, startSectionsSize, endSections, partSection, partSectionByModel, costSummary
+from fields import sections, topSection, bottomSection, possibleSize
+from fields import startSections, startSectionsSize, endSections, partSection, partSectionByModel, costSummary, boatLength
 import openpyxl
 import pickle
 import sys # We need sys so that we can pass argv to QApplication
@@ -193,6 +193,8 @@ class background_thread(QThread):
             for cell in col:
                 if  str(cell.value).isdigit():
                     boatSizes.append(cell.value)
+        # KEY NOT DERIVED FROM FIELDS.PY
+        data['BOAT SIZES'] = boatSizes
 
         # Process top static section of sheet
         for name, column, row, default in topSection:
@@ -212,11 +214,12 @@ class background_thread(QThread):
         # Process top non-parts portion of sections
         for i, section in enumerate(sections):
             offset = starts[i]
-            for name, column, row, default in startSections:
-                value = ws.cell(column = column, row = row + offset).value
-                if value is None:
-                    value = default
-                data[section + name] = value
+            for j, boatSize in enumerate(boatSizes):
+                for name, column, row, default in startSections:
+                    value = ws.cell(column = column + (j * 4), row = row + offset).value
+                    if value is None:
+                        value = default
+                    data[section + " " + str(boatSize) + name] = value
 
 		# Process top non-parts portion of sections by boat size
         for i, section in enumerate(sections):

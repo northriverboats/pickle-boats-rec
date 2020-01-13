@@ -21,8 +21,37 @@ Notes:
 """
 
 # order of sections corresponds with order of starts and ends
-sections = ["TRAILER", "ENGINE & JET", "FABRICATION", "CANVAS", "PAINT", "OUTFITTING"]
+sections = [
+    "TRAILER",
+    "ENGINE & JET",
+    "FABRICATION",
+    "CANVAS",
+    "PAINT",
+    "OUTFITTING"
+]
 
+possibleSize = [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37
+]
 
 ##  TOP BAND        #########################################################
 
@@ -53,6 +82,9 @@ costSummary = [
 	[" ADVERTISED CM", 11, 14, "0"],
 ]
 
+boatLength = [
+	["BOAT SIZE", 8, 1, ""],
+]
 
 ##  BOTTOM BAND    ##########################################################
 
