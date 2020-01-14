@@ -147,10 +147,8 @@ class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.lblFile.setText(label)
 
 
-        
-class background_thread(QThread):
+class pickler():
     def __init__(self, dir):
-        QThread.__init__(self)
         self.dir = dir
         self.wb = None
         self.ws = None
@@ -160,17 +158,10 @@ class background_thread(QThread):
         self.data = {}
         self.part = {}
 
-    def __del__(self):
-        self.wait()
-
-    def build_files_list(self, dir):
-        self.emit(SIGNAL('update_statusbar(qString)'), "Finding files...")
+    def build_files_list(self):
         files = []
-        for path in Path(dir).glob("[!~$]*.xlsx"):
-            if not self.running:
-                break
+        for path in Path(self.dir).glob("[!~$]*.xlsx"):
             files.append(path)
-        self.emit(SIGNAL('update_statusbar(qString)'), "Found {} files to process".format(len(files)))
         return files
 
     def open_sheet(self, file):
@@ -328,10 +319,25 @@ class background_thread(QThread):
 
         return [str(self.data["BOAT MODEL"]), self.data]
 
+        
+class background_thread(QThread):
+    def __init__(self, dir):
+        QThread.__init__(self)
+        self.dir = dir
+
+    def __del__(self):
+        self.wait()
+
     def run(self):
         self.running = True
         self.emit(SIGNAL('update_progressbar(int)'), 0)
-        files = self.build_files_list(self.dir)
+
+        pickle_folder = pickler(self.dir)
+        self.emit(SIGNAL('update_statusbar(qString)'), "Finding files...")
+
+        files = pickle_folder.build_files_list()
+        self.emit(SIGNAL('update_statusbar(qString)'), "Found {} files to process".format(len(files)))
+
         options = {}
         total_files = len(files)
         current_count = 0
@@ -344,7 +350,7 @@ class background_thread(QThread):
             if not self.running:
                 break
 
-            option, data = self.process_sheet(file)
+            option, data = pickle_folder.process_sheet(file)
             options[option] = data
 
             current_count += 1
@@ -364,7 +370,22 @@ def gui():
     app.exec_()                         # and execute the app
 
 def cli(folder):
-    click.echo('Processing: ' + folder)
+    pickle_folder = pickler(folder)
+    click.echo("Finding files...")
+    files = pickle_folder.build_files_list()
+    click.echo("Found {} files to process".format(len(files)))
+
+    options = {}
+
+    with click.progressbar(files) as bar:
+        for file in bar:
+            option, data = pickle_folder.process_sheet(file)
+            options[option] = data
+
+    file_name = os.path.join(folder, os.path.split(folder)[1].lower() + ".pickle")
+    pickle.dump(options, open(file_name, 'wb'))
+    click.echo("Saving pickle: {}".format(file_name))
+
 
 @click.command()
 @click.option('--folder', '-f', type=click.Path(exists=True, file_okay=False), help="folder to process")
