@@ -11,6 +11,7 @@ import pickle
 import sys # We need sys so that we can pass argv to QApplication
 import os
 import re
+import click
 import MainWindow  # This file holds our MainWindow and all design related things
 
 
@@ -362,12 +363,16 @@ def gui():
     form.show()                         # Show the form
     app.exec_()                         # and execute the app
 
-def cli():
-    pass
+def cli(folder):
+    click.echo('Processing: ' + folder)
 
-def main():
-    gui()
-
+@click.command()
+@click.option('--folder', '-f', type=click.Path(exists=True, file_okay=False), help="folder to process")
+def main(folder):
+    if folder == None:
+        gui()
+    else:
+        cli(folder)
 
 if __name__ == '__main__':              # if we're running file directly and not importing it
-    main()                              # run the main function
+    main()                              # pylint: disable=no-value-for-parameter
