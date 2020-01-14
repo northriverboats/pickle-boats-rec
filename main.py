@@ -366,4 +366,3 @@ def main():
 
 if __name__ == '__main__':              # if we're running file directly and not importing it
     main()                              # run the main function
-                       # run the main function
