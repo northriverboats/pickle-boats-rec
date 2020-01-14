@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt4 import QtGui # Import the PyQt4 module we'll need
-from PyQt4 import QtCore
-from PyQt4.QtCore import QSettings, QSize, QPoint
-from PyQt4.QtCore import QThread, SIGNAL
+from PyQt4.QtCore import QSettings, QSize, QPoint, QCoreApplication, QThread, SIGNAL # pylint: disable-msg=E0611
 from pathlib import Path
 from dotenv import load_dotenv
 from fields import sections, topSection, bottomSection, possibleSize
@@ -16,7 +14,8 @@ import re
 import MainWindow  # This file holds our MainWindow and all design related things
 
 
-"""
+
+r"""
 Notes:
 patch of the PyInstaller/depend/bindepend.py https://github.com/Loran425/pyinstaller/commit/14b6e65642e4b07a4358bab278019a48dedf7460
 
@@ -34,12 +33,12 @@ ToDo's
 class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super().__init__()
         self.setupUi(self)
 
         # set python environment
         if getattr(sys, 'frozen', False):
-            bundle_dir = sys._MEIPASS
+            bundle_dir = sys._MEIPASS # pylint: disable=no-member
         else:
             # we are running in a normal Python environment
             bundle_dir = os.path.dirname(os.path.abspath(__file__))
@@ -51,9 +50,9 @@ class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.setWindowIcon(QtGui.QIcon(os.path.join(bundle_dir, "pickle.ico")))
 
         # work in INI File Stuff here
-        QtCore.QCoreApplication.setOrganizationName("NRB")
-        QtCore.QCoreApplication.setOrganizationDomain("northriverboats.com")
-        QtCore.QCoreApplication.setApplicationName("Options Boat Pickler")
+        QCoreApplication.setOrganizationName("NRB")
+        QCoreApplication.setOrganizationDomain("northriverboats.com")
+        QCoreApplication.setApplicationName("Options Boat Pickler")
         self.settings = QSettings()
         
 
@@ -76,8 +75,8 @@ class MainAppWindow(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
 
     def doAbout(self, event):
         about_msg = "NRB Boat Folder Pickler\n©2019 North River Boats\nBy Fred Warren"
-        reply = QtGui.QMessageBox.information(self, 'About',
-                         about_msg, QtGui.QMessageBox.Ok)
+        QtGui.QMessageBox.information(self, 'About',
+                about_msg, QtGui.QMessageBox.Ok)
 
     def closeEvent(self, e):
         self._closeEvent(0)
@@ -158,6 +157,7 @@ class background_thread(QThread):
         self.ends = []
         self.boatSizes = []
         self.data = {}
+        self.part = {}
 
     def __del__(self):
         self.wait()
@@ -208,8 +208,8 @@ class background_thread(QThread):
             if value is None:
                 value = default
             self.data[name] = value
-    
-    def process_cost_summary(self):
+
+    def process_cost_summary_by_boat_size(self):
         #Process cost summary
         for i, boatSize in enumerate(self.boatSizes):
             for name, column, row, default in costSummary:
@@ -218,62 +218,87 @@ class background_thread(QThread):
                     value = default
                 self.data[str(boatSize) + name] = value
 
-    #### PROCESS SECTION PORTIONS OF THE SHEET #############    
+    #### PROCESS SECTION PORTIONS OF THE SHEET SUPPORTING FUNCTIONS #############
+    def process_inner_section_top(self, index, offset, section):
+        for name, column, row, default in startSections:
+            value = self.ws.cell(column = column, row = row + offset).value
+            if value is None:
+                value = default
+            # print(section + name, value)
+            self.data[section + name] = value
+
+    def process_inner_section_top_by_boat_size(self, index, offset, boatSize, section):
+        for name, column, row, default in startSectionsSize:
+            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            if value is None:
+                value = default
+            # print(section + " " + str(boatSize) + name, value)
+            self.data[section + " " + str(boatSize) + name] = value
+
+    def process_inner_section_bottom_by_boat_size(self, index, offset, boatSize, section):
+        for name, column, row, default in endSections:
+            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            if value is None:
+                value = default
+            # print(section + " " + str(boatSize) + name, value)
+            self.data[section + " " + str(boatSize) + name] = value
+
+
+    def process_part_by_boat_size(self, index, offset, boatSize, section):
+        for name, column, row, default in partSectionByModel:
+            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            if value is None:
+                value = default
+            self.part[str(boatSize) + name] = value
+
+    def process_part_by_non_boat_size(self, offset, section):
+        for name, column, row, default in partSection:
+            value = self.ws.cell(column = column, row = row + offset).value
+            if value is None:
+                value = default
+            self.part[name] = value
+
+
+    def process_section_by_boat_sizes(self, offset, section, process_by_size_function):
+        for index, boatSize in enumerate(self.boatSizes):
+            process_by_size_function(index, offset, boatSize, section)
+
+    def process_parts(self, index, section):
+        for offset in range(self.starts[index], self.ends[index]-1):
+            self.part = {}
+            if self.ws.cell(column = 1, row = 1 + offset).value is not None:
+                self.process_part_by_non_boat_size(offset, section)
+                self.process_section_by_boat_sizes(offset, section, self.process_part_by_boat_size)
+                self.data[section + " PARTS"].append(self.part)
+
+                
+    #### PROCESS SECTION PORTIONS OF THE SHEET #############
     def process_section_top(self):
-        # Process top non-parts portion of sections
-        for i, section in enumerate(sections):
-            offset = self.starts[i]
-            for j, boatSize in enumerate(self.boatSizes):
-                for name, column, row, default in startSections:
-                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
-                    if value is None:
-                        value = default
-                    self.data[section + " " + str(boatSize) + name] = value
-    
-    def process_section_top_sizes(self):
+        # Process top non-parts portion of sections not by boat size
+        for index, section in enumerate(sections):
+            offset = self.starts[index]
+            self.process_inner_section_top(index, offset, section)
+
+    def process_section_top_by_boat_size(self):
 		# Process top non-parts portion of sections by boat size
         for i, section in enumerate(sections):
             offset = self.starts[i]
-            for j, boatSize in enumerate(self.boatSizes):
-                for name, column, row, default in startSectionsSize:
-                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
-                    if value is None:
-                        value = default
-                    self.data[section + " " + str(boatSize) + name] = value
+            self.process_section_by_boat_sizes(offset, section, self.process_inner_section_top_by_boat_size)
     
     def process_section_parts(self):
-        # Process parts portion of sections
-        for i, section in enumerate(sections):
+        # Process parts portion of sections both by non boat size and by boat size must be combined
+        for index, section in enumerate(sections):
             self.data[section + " PARTS"] = []
-            for offset in range(self.starts[i], self.ends[i]-1):
-                part = {}
-                if self.ws.cell(column = 1, row = 1 + offset).value is not None:
-                    for name, column, row, default in partSection:
-                        value = self.ws.cell(column = column, row = row + offset).value
-                        if value is None:
-                            value = default
-                        part[name] = value
-                 
-                    for j, boatSize in enumerate(self.boatSizes):
-                        for name, column, row, default in partSectionByModel:
-                            value = self.ws.cell(column = column + (j * 4), row = row + offset).value
-                            if value is None:
-                                value = default
-                            part[str(boatSize) + name] = value
-                                
-                    self.data[section + " PARTS"].append(part)
+            self.process_parts(index, section)
+            # print(section + " PARTS", self.data[section + " PARTS"])
     
     def process_section_bottom(self):
         # Process bottom non-parts portion of sections
         for i, section in enumerate(sections):
             offset = self.ends[i]
-            for j, boatSize in enumerate(self.boatSizes):
-                for name, column, row, default in endSections:
-                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
-                    if value is None:
-                        value = default
-                    self.data[section + " " + str(boatSize) + name] = value
-             
+            self.process_section_by_boat_sizes(offset, section, self.process_inner_section_bottom_by_boat_size)
+
+
     #### PROCESS FULL SHEET ##########################
     def process_sheet(self, file):
         self.open_sheet(file)
@@ -290,15 +315,15 @@ class background_thread(QThread):
         self.data["FULLPATH"] = file.resolve()
         self.data['BOAT SIZES'] = self.boatSizes
 
-        # process non-section bands
-        self.process_top_section()
-        self.process_cost_summary()
+        # process top non-section band
+        self.process_top_section() # only non-boat-size
+        self.process_cost_summary_by_boat_size() # only by-boat-size
         
         # process section bands
-        self.process_section_top()
-        self.process_section_top_sizes()
-        self.process_section_parts()
-        self.process_section_bottom()
+        self.process_section_top() # only non-boat-size
+        self.process_section_top_by_boat_size() # only by-boat-size
+        self.process_section_parts() # both non-boat-size and by-boat-size
+        self.process_section_bottom() # only non-boat-size
 
         return [str(self.data["BOAT MODEL"]), self.data]
 

@@ -55,7 +55,7 @@ possibleSize = [
 
 ##  TOP BAND        #########################################################
 
-# top of sheet, absolute row, absolute column
+# top of sheet, absolute row, absolute column - not by boat size
 # [0] title, [1] column, [2] row, [3] default
 topSection = [
     ["BOAT MODEL", 1, 1, ""],
@@ -65,7 +65,7 @@ topSection = [
     ["RETAIL MOTOR AND TRAILER", 2, 8, "0"],
 ]    
 
-# top of sheet, calculated column, absolute row
+# top of sheet, calculated column, absolute row - by boat size
 # [0] title, [1] column, [2] row, [3] default
 costSummary = [
     [" LABOR TOTAL", 11, 2, "0"],
@@ -88,7 +88,7 @@ boatLength = [
 
 ##  BOTTOM BAND    ##########################################################
 
-# bottom section - max(end) + 5, absolute column, offest row
+# bottom section - max(end) + 5, absolute column, offest row - not by boat size
 # [0] title, [1] column, [2] row, [3] default
 bottomSection = [
 ]
@@ -96,14 +96,14 @@ bottomSection = [
 
 ##  SECTION BANDS  ##########################################################
 
-# top of section, absolute column, offset row
+# top of section, absolute column, offset row - not by boat size
 # [0] title, [1] column, [2] row, [3] default
 startSections = [
     [" CONSUMABLES", 1, -1, "0"],
     [" LABOR RATE", 3, -1, "0"],
 ]
 
-# top of section, calculated column, offset row
+# top of section, calculated column, offset row - by boat size
 # [0] title, [1] column, [2] row, [3] default
 startSectionsSize = [
     [" HOURS", 10, -1, "0"]
