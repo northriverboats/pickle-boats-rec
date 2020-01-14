@@ -356,12 +356,17 @@ class background_thread(QThread):
         pickle.dump(options, open(file_name, 'wb'))
         self.emit(SIGNAL('endBackgroundTask()'))
 
-
-def main():
+def gui():
     app = QtGui.QApplication(sys.argv)  # A new instance of QApplication
     form = MainAppWindow()              # We set the form to be our Main App Wehdiw (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app
+
+def cli():
+    pass
+
+def main():
+    gui()
 
 
 if __name__ == '__main__':              # if we're running file directly and not importing it
