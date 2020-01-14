@@ -152,6 +152,12 @@ class background_thread(QThread):
     def __init__(self, dir):
         QThread.__init__(self)
         self.dir = dir
+        self.wb = None
+        self.ws = None
+        self.starts = []
+        self.ends = []
+        self.boatSizes = []
+        self.data = {}
 
     def __del__(self):
         self.wait()
@@ -166,103 +172,135 @@ class background_thread(QThread):
         self.emit(SIGNAL('update_statusbar(qString)'), "Found {} files to process".format(len(files)))
         return files
 
-    def process_sheet(self, file):
-        wb = openpyxl.load_workbook(file, data_only = True)
-        ws = wb.active
-        boat = file.name[:-5]
-        data = {}
-        data["FILE"] = file.name
-        data["FULLPATH"] = file.resolve()
+    def open_sheet(self, file):
+        self.wb = openpyxl.load_workbook(file, data_only = True)
+        self.ws = self.wb.active
 
+    #### IDENTIFY PORTIONS OF SHEET TO PROCESS #############
+    def find_starts(self):
         # find where sections start
-        starts = []
-        for row in ws.iter_cols(min_col=8, max_col=8):
+        self.starts = []
+        for row in self.ws.iter_cols(min_col=8, max_col=8):
             for cell in row:
                 if cell.value == "QTY.":
-                    starts.append(cell.row)
+                    self.starts.append(cell.row)
 
+    def find_ends(self):
         # find where sections end
-        ends = []
-        for row in ws.iter_cols(min_col=10, max_col=10):
+        self.ends = []
+        for row in self.ws.iter_cols(min_col=10, max_col=10):
             for cell in row:
                 if cell.value == "SUBTOTAL":
-                    ends.append(cell.row)
-
-        boatSizes = []
-        for col in ws.iter_rows(min_row=1, max_row=1):
+                    self.ends.append(cell.row)
+    
+    def find_boat_sizes(self):
+        self.boatSizes = []
+        for col in self.ws.iter_rows(min_row=1, max_row=1):
             for cell in col:
                 if  str(cell.value).isdigit():
-                    boatSizes.append(cell.value)
-        # KEY NOT DERIVED FROM FIELDS.PY
-        data['BOAT SIZES'] = boatSizes
-
+                    self.boatSizes.append(cell.value)
+    
+    #### PROCESS NON-SECTION PORTIONS OF THE SHEET #############    
+    def process_top_section(self):
         # Process top static section of sheet
         for name, column, row, default in topSection:
-            value = ws.cell(column = column, row = row).value
+            value = self.ws.cell(column = column, row = row).value
             if value is None:
                 value = default
-            data[name] = value
-
-		#Process cost summary
-        for i, boatSize in enumerate(boatSizes):
+            self.data[name] = value
+    
+    def process_cost_summary(self):
+        #Process cost summary
+        for i, boatSize in enumerate(self.boatSizes):
             for name, column, row, default in costSummary:
-                value = ws.cell(column = column + (i * 4), row = row).value
+                value = self.ws.cell(column = column + (i * 4), row = row).value
                 if value is None:
                     value = default
-                data[str(boatSize) + name] = value
+                self.data[str(boatSize) + name] = value
 
+    #### PROCESS SECTION PORTIONS OF THE SHEET #############    
+    def process_section_top(self):
         # Process top non-parts portion of sections
         for i, section in enumerate(sections):
-            offset = starts[i]
-            for j, boatSize in enumerate(boatSizes):
+            offset = self.starts[i]
+            for j, boatSize in enumerate(self.boatSizes):
                 for name, column, row, default in startSections:
-                    value = ws.cell(column = column + (j * 4), row = row + offset).value
+                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
                     if value is None:
                         value = default
-                    data[section + " " + str(boatSize) + name] = value
-
+                    self.data[section + " " + str(boatSize) + name] = value
+    
+    def process_section_top_sizes(self):
 		# Process top non-parts portion of sections by boat size
         for i, section in enumerate(sections):
-            offset = starts[i]
-            for j, boatSize in enumerate(boatSizes):
+            offset = self.starts[i]
+            for j, boatSize in enumerate(self.boatSizes):
                 for name, column, row, default in startSectionsSize:
-                    value = ws.cell(column = column + (j * 4), row = row + offset).value
+                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
                     if value is None:
                         value = default
-                    data[section + " " + str(boatSize) + name] = value
-
-        # Process bottom non-parts portion of sections
-        for i, section in enumerate(sections):
-            offset = ends[i]
-            for j, boatSize in enumerate(boatSizes):
-                for name, column, row, default in endSections:
-                    value = ws.cell(column = column + (j * 4), row = row + offset).value
-                    if value is None:
-                        value = default
-                    data[section + " " + str(boatSize) + name] = value
-
+                    self.data[section + " " + str(boatSize) + name] = value
+    
+    def process_section_parts(self):
         # Process parts portion of sections
         for i, section in enumerate(sections):
-            data[section + " PARTS"] = []
-            for offset in range(starts[i], ends[i]-1):
+            self.data[section + " PARTS"] = []
+            for offset in range(self.starts[i], self.ends[i]-1):
                 part = {}
-                if ws.cell(column = 1, row = 1 + offset).value is not None:
+                if self.ws.cell(column = 1, row = 1 + offset).value is not None:
                     for name, column, row, default in partSection:
-                        value = ws.cell(column = column, row = row + offset).value
+                        value = self.ws.cell(column = column, row = row + offset).value
                         if value is None:
                             value = default
                         part[name] = value
                  
-                    for j, boatSize in enumerate(boatSizes):
+                    for j, boatSize in enumerate(self.boatSizes):
                         for name, column, row, default in partSectionByModel:
-                            value = ws.cell(column = column + (j * 4), row = row + offset).value
+                            value = self.ws.cell(column = column + (j * 4), row = row + offset).value
                             if value is None:
                                 value = default
                             part[str(boatSize) + name] = value
                                 
-                    data[section + " PARTS"].append(part)
+                    self.data[section + " PARTS"].append(part)
+    
+    def process_section_bottom(self):
+        # Process bottom non-parts portion of sections
+        for i, section in enumerate(sections):
+            offset = self.ends[i]
+            for j, boatSize in enumerate(self.boatSizes):
+                for name, column, row, default in endSections:
+                    value = self.ws.cell(column = column + (j * 4), row = row + offset).value
+                    if value is None:
+                        value = default
+                    self.data[section + " " + str(boatSize) + name] = value
+             
+    #### PROCESS FULL SHEET ##########################
+    def process_sheet(self, file):
+        self.open_sheet(file)
 
-        return [str(data["BOAT MODEL"]), data]
+        # find different sections on the sheet
+        self.find_starts()
+        self.find_ends()
+        self.find_boat_sizes()
+
+        self.data = {}
+
+        # keys not derived from fields.py
+        self.data["FILE"] = file.name
+        self.data["FULLPATH"] = file.resolve()
+        self.data['BOAT SIZES'] = self.boatSizes
+
+        # process non-section bands
+        self.process_top_section()
+        self.process_cost_summary()
+        
+        # process section bands
+        self.process_section_top()
+        self.process_section_top_sizes()
+        self.process_section_parts()
+        self.process_section_bottom()
+
+        return [str(self.data["BOAT MODEL"]), self.data]
 
     def run(self):
         self.running = True
