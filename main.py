@@ -4,7 +4,7 @@ from PyQt4 import QtGui # Import the PyQt4 module we'll need
 from PyQt4.QtCore import QSettings, QSize, QPoint, QCoreApplication, QThread, SIGNAL # pylint: disable-msg=E0611
 from pathlib import Path
 from dotenv import load_dotenv
-from fields import sections, topSection, bottomSection, possibleSize
+from fields import sections, topSection, bottomSection, possibleSize, width, start, end
 from fields import startSections, startSectionsSize, endSections, partSection, partSectionByModel, costSummary, boatLength
 import openpyxl
 import pickle
@@ -172,7 +172,7 @@ class pickler():
     def find_starts(self):
         # find where sections start
         self.starts = []
-        for row in self.ws.iter_cols(min_col=8, max_col=8):
+        for row in self.ws.iter_cols(min_col=start, max_col=start):
             for cell in row:
                 if cell.value == "QTY.":
                     self.starts.append(cell.row)
@@ -180,7 +180,7 @@ class pickler():
     def find_ends(self):
         # find where sections end
         self.ends = []
-        for row in self.ws.iter_cols(min_col=10, max_col=10):
+        for row in self.ws.iter_cols(min_col=end, max_col=end):
             for cell in row:
                 if cell.value == "SUBTOTAL":
                     self.ends.append(cell.row)
@@ -205,7 +205,7 @@ class pickler():
         #Process cost summary
         for i, boatSize in enumerate(self.boatSizes):
             for name, column, row, default in costSummary:
-                value = self.ws.cell(column = column + (i * 4), row = row).value
+                value = self.ws.cell(column = column + (i * width), row = row).value
                 if value is None:
                     value = default
                 self.data[str(boatSize) + name] = value
@@ -221,7 +221,7 @@ class pickler():
 
     def process_inner_section_top_by_boat_size(self, index, offset, boatSize, section):
         for name, column, row, default in startSectionsSize:
-            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            value = self.ws.cell(column = column + (index * width), row = row + offset).value
             if value is None:
                 value = default
             # print(section + " " + str(boatSize) + name, value)
@@ -229,7 +229,7 @@ class pickler():
 
     def process_inner_section_bottom_by_boat_size(self, index, offset, boatSize, section):
         for name, column, row, default in endSections:
-            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            value = self.ws.cell(column = column + (index * width), row = row + offset).value
             if value is None:
                 value = default
             # print(section + " " + str(boatSize) + name, value)
@@ -238,7 +238,7 @@ class pickler():
 
     def process_part_by_boat_size(self, index, offset, boatSize, section):
         for name, column, row, default in partSectionByModel:
-            value = self.ws.cell(column = column + (index * 4), row = row + offset).value
+            value = self.ws.cell(column = column + (index * width), row = row + offset).value
             if value is None:
                 value = default
             self.part[str(boatSize) + name] = value
