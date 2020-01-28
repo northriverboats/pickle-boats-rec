@@ -157,6 +157,7 @@ class pickler():
         self.boatSizes = []
         self.data = {}
         self.part = {}
+        self.not_found = []
 
     def build_files_list(self):
         files = []
@@ -167,6 +168,18 @@ class pickler():
     def open_sheet(self, file):
         self.wb = openpyxl.load_workbook(file, data_only = True)
         self.ws = self.wb.active
+
+    def output_not_found(self):
+        if len(self.not_found) == 0:
+            return
+        click.echo("ERROR LIST =================================")
+        for error in self.not_found:
+            output = "{:30.30} {:12.12} {}".format(
+                error['file'],
+                error['section'],
+                error['part']
+            )
+            click.echo(output)
 
     #### IDENTIFY PORTIONS OF SHEET TO PROCESS #############
     def find_starts(self):
@@ -255,15 +268,27 @@ class pickler():
         for index, boatSize in enumerate(self.boatSizes):
             process_by_size_function(index, offset, boatSize, section)
 
+    def process_part(self, index, section, offset):
+        self.part = {}
+        part = self.ws.cell(column = 1, row = 1 + offset).value
+        description = self.ws.cell(column = 2, row = 1 + offset).value
+        if description == "NOT FOUND":
+            error = {
+                'file': self.data['FILE'],
+                'section': section,
+                'part': part
+            }
+            self.not_found.append(error)
+        elif part is not None:
+            self.process_part_by_non_boat_size(offset, section)
+            self.process_section_by_boat_sizes(offset, section, self.process_part_by_boat_size)
+            self.data[section + " PARTS"].append(self.part)
+
     def process_parts(self, index, section):
         for offset in range(self.starts[index], self.ends[index]-1):
-            self.part = {}
-            if self.ws.cell(column = 1, row = 1 + offset).value is not None:
-                self.process_part_by_non_boat_size(offset, section)
-                self.process_section_by_boat_sizes(offset, section, self.process_part_by_boat_size)
-                self.data[section + " PARTS"].append(self.part)
+            self.process_part(index, section, offset)
 
-                
+
     #### PROCESS SECTION PORTIONS OF THE SHEET #############
     def process_section_top(self):
         # Process top non-parts portion of sections not by boat size
@@ -317,6 +342,7 @@ class pickler():
         self.process_section_parts() # both non-boat-size and by-boat-size
         self.process_section_bottom() # only non-boat-size
 
+        self.output_not_found() # ouptut any errors to stdout
         return [str(self.data["BOAT MODEL"]), self.data]
 
         
@@ -385,6 +411,7 @@ def cli(folder):
     file_name = os.path.join(folder, os.path.split(folder)[1].lower() + ".pickle")
     pickle.dump(options, open(file_name, 'wb'))
     click.echo("Saving pickle: {}".format(file_name))
+
 
 
 @click.command()
