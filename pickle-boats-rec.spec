@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Development\\nrb-pickle-boats'],
+             pathex=['C:\\Development\\pickle-boats-rec'],
              binaries=[],
              datas=[('pickle.ico','.'),('.env','.')],
              hiddenimports=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='NRB Boats Folder Pickler',
+          name='Pickle Rec Boats Folder',
           debug=False,
           strip=False,
           upx=True,

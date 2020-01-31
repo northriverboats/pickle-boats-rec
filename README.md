@@ -2,10 +2,10 @@
 ## To Edit Source Code and Work with GIT
 1. Use Git Bash
 2. `cd ../../Development`
-2. `git clone https://github.com/northriverboats/nrb-pickle-boats.git`
-2. `cd nrb-pickle-boats`
+2. `git clone https://github.com/northriverboats/pickle-boats-rec.git`
+2. `cd pickle-boats-rec`
 2. Use windows shell
-2. `cd \Development\nrb-pickle-boats`
+2. `cd \Development\pickle-boats-rec`
 3. `\Python37\python -m venv .venv`
 4. `.venv\Scripts\activate`
 5. `python -m pip install pip --upgrade`
@@ -23,7 +23,7 @@
 6. `.venv\Lib\site-packages\PyQt4\pyuic4 PreferencesDialog.ui  -o PreferencesDialog.py`
 
 ## Build Executable
-`.venv\Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Excel Pickle Boats" "NRB Pickle Boats FWW.spec" main.py`
+`.venv\Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Pickle Rec Boats Folder" "pickle-boats-rec.spec" main.py`
 
 ## Methodology for extracting values from Spreadsheet
 1. A sheet is vertically divided into top, bottom and sections
