@@ -9,6 +9,7 @@ from fields import startSections, startSectionsSize, endSections, partSection, p
 import openpyxl
 import pickle
 import sys # We need sys so that we can pass argv to QApplication
+import tempfile
 import os
 import re
 import click
@@ -377,6 +378,19 @@ class background_thread(QThread):
     def __del__(self):
         self.wait()
 
+    def handle_errors(self, all_not_found, all_dupes):
+        if all_not_found + all_dupes:
+            with tempfile.TemporaryFile() as file:
+                if all_not_found:
+                    file.write("PARTS NOT FOUND =====================================\n")
+                    file.write(all_not_found)
+                    file.write("\n")
+                if all_dupes:
+                    file.write("DUPLICATE PARTS =====================================\n")
+                    file.write(all_dupes)
+                    file.write("\n")
+                os.startfile(file.name)
+
     def run(self):
         self.running = True
         self.emit(SIGNAL('update_progressbar(int)'), 0)
@@ -414,6 +428,8 @@ class background_thread(QThread):
         # if we get to this point, pickle the results....
         file_name = os.path.join(self.dir, os.path.split(self.dir)[1].lower() + ".pickle")
         pickle.dump(options, open(file_name, 'wb'))
+        # handle all_not_found and all_dups
+        self.handle_errors(all_not_found, all_dupes)
         self.emit(SIGNAL('endBackgroundTask()'))
 
 def gui():
