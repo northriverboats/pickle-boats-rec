@@ -157,7 +157,9 @@ class pickler():
         self.boatSizes = []
         self.data = {}
         self.part = {}
+        self.parts = {}
         self.not_found = []
+        self.dupes = []
 
     def build_files_list(self):
         files = []
@@ -170,16 +172,25 @@ class pickler():
         self.ws = self.wb.active
 
     def output_not_found(self):
-        if len(self.not_found) == 0:
-            return
-        click.echo("ERROR LIST =================================")
+        output = ""
         for error in self.not_found:
-            output = "{:30.30} {:12.12} {}".format(
+            output += "{:30.30} {:12.12} {}\n".format(
                 error['file'],
                 error['section'],
                 error['part']
             )
-            click.echo(output)
+        return output
+
+    def output_dupes(self):
+        output = ""
+        for error in self.dupes:
+            output += "{:30.30} {:12.12} {}\n".format(
+                error['file'],
+                error['section'],
+                error['part']
+            )
+        return output
+
 
     #### IDENTIFY PORTIONS OF SHEET TO PROCESS #############
     def find_starts(self):
@@ -280,13 +291,23 @@ class pickler():
             }
             self.not_found.append(error)
         elif part is not None:
+            self.parts[part] = self.parts.get(part, 0) + 1
             self.process_part_by_non_boat_size(offset, section)
             self.process_section_by_boat_sizes(offset, section, self.process_part_by_boat_size)
             self.data[section + " PARTS"].append(self.part)
 
     def process_parts(self, index, section):
+        self.parts = {}
         for offset in range(self.starts[index], self.ends[index]-1):
             self.process_part(index, section, offset)
+        for part in {part for part in self.parts if self.parts[part] > 1}:
+            error = {
+                'file': self.data['FILE'],
+                'section': section,
+                'part': part
+            }
+            self.dupes.append(error)
+            
 
 
     #### PROCESS SECTION PORTIONS OF THE SHEET #############
@@ -342,8 +363,10 @@ class pickler():
         self.process_section_parts() # both non-boat-size and by-boat-size
         self.process_section_bottom() # only non-boat-size
 
-        self.output_not_found() # ouptut any errors to stdout
-        return [str(self.data["BOAT MODEL"]), self.data]
+        not_found = self.output_not_found()
+        dupes = self.output_dupes()
+
+        return [str(self.data["BOAT MODEL"]), self.data, not_found, dupes]
 
         
 class background_thread(QThread):
@@ -367,6 +390,8 @@ class background_thread(QThread):
         options = {}
         total_files = len(files)
         current_count = 0
+        all_not_found = ""
+        all_dupes = ""
 
         if not self.running:
             self.emit(SIGNAL('endBackgroundTask()'))
@@ -376,8 +401,10 @@ class background_thread(QThread):
             if not self.running:
                 break
 
-            option, data = pickle_folder.process_sheet(file)
+            option, data, not_found, dupes = pickle_folder.process_sheet(file)
             options[option] = data
+            all_not_found += not_found
+            all_dupes += dupes
 
             current_count += 1
             self.emit(SIGNAL('update_progressbar(int)'), int(float(current_count) / total_files * 100))
@@ -402,15 +429,27 @@ def cli(folder):
     click.echo("Found {} files to process".format(len(files)))
 
     options = {}
+    all_not_found = ""
+    all_dupes = ""
 
     with click.progressbar(files) as bar:
         for file in bar:
-            option, data = pickle_folder.process_sheet(file)
+            option, data, not_found, dupes = pickle_folder.process_sheet(file)
             options[option] = data
+            all_not_found += not_found
+            all_dupes += dupes
 
     file_name = os.path.join(folder, os.path.split(folder)[1].lower() + ".pickle")
     pickle.dump(options, open(file_name, 'wb'))
     click.echo("Saving pickle: {}".format(file_name))
+    if all_not_found:
+        click.echo("PARTS NOT FOUND ==================================================")
+        click.echo(all_not_found)
+        click.echo("\n")
+    if all_dupes:
+        click.echo("DUPLICATE PARTS ==================================================")
+        click.echo(all_dupes)
+        click.echo("\n")
 
 
 
