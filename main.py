@@ -174,22 +174,14 @@ class pickler():
 
     def output_not_found(self):
         output = ""
-        for error in self.not_found:
-            output += "{:30.30} {:12.12} {}\n".format(
-                error['file'],
-                error['section'],
-                error['part']
-            )
+        for error in sorted(self.not_found, key=lambda x: [x[0], x[1], x[2]]):
+            output += " {:30.30}    {:12.12}    {:30.30}\n".format(error[0], error[1], error[2])
         return output
 
     def output_dupes(self):
         output = ""
-        for error in self.dupes:
-            output += "{:30.30} {:12.12} {}\n".format(
-                error['file'],
-                error['section'],
-                error['part']
-            )
+        for error in sorted(self.dupes, key=lambda x: [x[0], x[1], x[2]]):
+            output += " {:30.30}    {:12.12}    {:30.30}\n".format(error[0], error[1], error[2])
         return output
 
 
@@ -285,11 +277,11 @@ class pickler():
         part = self.ws.cell(column = 1, row = 1 + offset).value
         description = self.ws.cell(column = 2, row = 1 + offset).value
         if description == "NOT FOUND":
-            error = {
-                'file': self.data['FILE'],
-                'section': section,
-                'part': part
-            }
+            error = [
+                self.data['FILE'],
+                section,
+                part,
+            ]
             self.not_found.append(error)
         elif part is not None:
             self.parts[part] = self.parts.get(part, 0) + 1
@@ -302,11 +294,11 @@ class pickler():
         for offset in range(self.starts[index], self.ends[index]-1):
             self.process_part(index, section, offset)
         for part in {part for part in self.parts if self.parts[part] > 1}:
-            error = {
-                'file': self.data['FILE'],
-                'section': section,
-                'part': part
-            }
+            error = [
+                self.data['FILE'],
+                section,
+                part,
+            ]
             self.dupes.append(error)
             
 
@@ -364,10 +356,7 @@ class pickler():
         self.process_section_parts() # both non-boat-size and by-boat-size
         self.process_section_bottom() # only non-boat-size
 
-        not_found = self.output_not_found()
-        dupes = self.output_dupes()
-
-        return [str(self.data["BOAT MODEL"]), self.data, not_found, dupes]
+        return [str(self.data["BOAT MODEL"]), self.data, self.output_not_found(), self.output_dupes()]
 
         
 class background_thread(QThread):
@@ -378,16 +367,16 @@ class background_thread(QThread):
     def __del__(self):
         self.wait()
 
-    def handle_errors(self, all_not_found, all_dupes):
-        if all_not_found + all_dupes:
-            with tempfile.TemporaryFile(suffix='.txt') as file:
-                if all_not_found:
-                    file.write("PARTS NOT FOUND =====================================\n")
-                    file.write(all_not_found)
-                    file.write("\n")
-                if all_dupes:
-                    file.write("DUPLICATE PARTS =====================================\n")
-                    file.write(all_dupes)
+    def handle_errors(self, not_founds, dupes):
+        if len(not_founds) + len(dupes):
+            with tempfile.TemporaryFile(suffix='.txt', mode='w', delete=False) as file:
+                if len(not_founds):
+                    file.write("--- PARTS NOT FOUND --------------------------------------------------------------\n\n")
+                    file.write(not_founds)
+                    file.write("\n\n")
+                if len(dupes):
+                    file.write("--- DUPLICATE PARTS --------------------------------------------------------------\n\n")
+                    file.write(dupes)
                     file.write("\n")
                 os.startfile(file.name)
 
@@ -404,8 +393,8 @@ class background_thread(QThread):
         options = {}
         total_files = len(files)
         current_count = 0
-        all_not_found = ""
-        all_dupes = ""
+        not_founds = []
+        dupes = []
 
         if not self.running:
             self.emit(SIGNAL('endBackgroundTask()'))
@@ -415,10 +404,8 @@ class background_thread(QThread):
             if not self.running:
                 break
 
-            option, data, not_found, dupes = pickle_folder.process_sheet(file)
+            option, data, not_founds, dupes = pickle_folder.process_sheet(file)
             options[option] = data
-            all_not_found += not_found
-            all_dupes += dupes
 
             current_count += 1
             self.emit(SIGNAL('update_progressbar(int)'), int(float(current_count) / total_files * 100))
@@ -429,7 +416,7 @@ class background_thread(QThread):
         file_name = os.path.join(self.dir, os.path.split(self.dir)[1].lower() + ".pickle")
         pickle.dump(options, open(file_name, 'wb'))
         # handle all_not_found and all_dups
-        self.handle_errors(all_not_found, all_dupes)
+        self.handle_errors(not_founds, dupes)
         self.emit(SIGNAL('endBackgroundTask()'))
 
 def gui():
@@ -445,28 +432,25 @@ def cli(folder):
     click.echo("Found {} files to process".format(len(files)))
 
     options = {}
-    all_not_found = ""
-    all_dupes = ""
+    not_founds = []
+    dupes = []
 
     with click.progressbar(files) as bar:
         for file in bar:
-            option, data, not_found, dupes = pickle_folder.process_sheet(file)
+            option, data, not_founds, dupes = pickle_folder.process_sheet(file)
             options[option] = data
-            all_not_found += not_found
-            all_dupes += dupes
 
     file_name = os.path.join(folder, os.path.split(folder)[1].lower() + ".pickle")
     pickle.dump(options, open(file_name, 'wb'))
     click.echo("Saving pickle: {}".format(file_name))
-    if all_not_found:
-        click.echo("PARTS NOT FOUND ==================================================")
-        click.echo(all_not_found)
-        click.echo("\n")
-    if all_dupes:
-        click.echo("DUPLICATE PARTS ==================================================")
-        click.echo(all_dupes)
-        click.echo("\n")
-
+    if len(not_founds):
+        click.echo("--- PARTS NOT FOUND --------------------------------------------------------------\n")
+        click.echo(not_founds)
+        click.echo("")
+    if len(dupes):
+        click.echo("--- DUPLICATE PARTS --------------------------------------------------------------\n")
+        click.echo(dupes)
+        click.echo("")
 
 
 @click.command()
