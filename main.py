@@ -380,7 +380,7 @@ class background_thread(QThread):
 
     def handle_errors(self, all_not_found, all_dupes):
         if all_not_found + all_dupes:
-            with tempfile.TemporaryFile() as file:
+            with tempfile.TemporaryFile(suffix='.txt') as file:
                 if all_not_found:
                     file.write("PARTS NOT FOUND =====================================\n")
                     file.write(all_not_found)
