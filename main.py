@@ -26,7 +26,7 @@ To design UI: Lib\site-packages\PyQt4\Designer.exe
 To rebuild UI: Lib\site-packages\PyQt4\pyuic4 MainWindow.ui  -o MainWindow.py
 
 Developed in C:\\Development\\nrb-pickle-boats :
-Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Boat Folder Pickler" "NRB Pickle Boats FWW.spec" main.py
+.venv\Scripts\pyinstaller.exe --onefile --windowed --icon options.ico  --name "Boat Folder Pickler" "pickle-boats-rec.spec" main.py
 
 ToDo's
 """
